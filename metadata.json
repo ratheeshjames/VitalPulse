@@ -1,0 +1,6 @@
+{
+  "name": "VitalPulse",
+  "description": "Native Material 3 BMI, body composition, metabolic energy, goal trajectory, and biometric tracking studio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

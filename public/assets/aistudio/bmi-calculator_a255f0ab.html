@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>BMI Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#eef2f0;--fg:#13231f;--card:#fff;--mut:#5b6b66;--ln:#d5ddd9;--ac:#0f766e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1816;--fg:#e6f0ed;--card:#16251f;--mut:#9bb0aa;--ln:#2a3d37;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1816;--fg:#e6f0ed;--card:#16251f;--mut:#9bb0aa;--ln:#2a3d37;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;max-width:760px;margin:0 auto;padding:14px}
+h1{font:700 1.6rem Georgia,serif;margin:4px 0 10px}h2{font:700 1.15rem Georgia,serif;margin:0 0 10px}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px}
+nav button{white-space:nowrap;border:1px solid var(--ln);background:var(--card);color:var(--fg);border-radius:20px;padding:8px 14px;font:inherit;cursor:pointer}
+nav button[aria-selected=true]{background:var(--ac);color:#fff;border-color:var(--ac)}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+label{display:block;font-size:.85rem;color:var(--mut)}
+input,select,textarea,button{font:inherit;color:var(--fg)}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);margin-top:3px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;margin:3px 3px 3px 0}
+.btn.s{background:transparent;color:var(--fg);border:1px solid var(--ln)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.m{background:var(--bg);border-radius:10px;padding:10px}.m b{display:block;font-size:1.2rem}.m span{font-size:.8rem;color:var(--mut)}
+#big{font:700 4rem/1 Georgia,serif;text-align:center}#cat{text-align:center;font-weight:700;font-size:1.2rem}
+#err{color:#dc2626;font-weight:600}
+.bar{height:14px;border-radius:7px;overflow:hidden;display:flex;position:relative}.bar i{display:block;height:100%}
+.pg{height:12px;background:var(--bg);border-radius:6px;overflow:hidden}.pg div{height:100%;background:var(--ac);transition:width .4s}
+table{width:100%;border-collapse:collapse;font-size:.9rem}td,th{padding:6px;border-bottom:1px solid var(--ln);text-align:left}
+body[data-u=m] .im,body[data-u=i] .me{display:none}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.on{opacity:1}details{border-bottom:1px solid var(--ln);padding:8px 0}summary{cursor:pointer;font-weight:600}
+.needle{transition:transform .6s;transform-origin:100px 100px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{nav,.np,#toast{display:none!important}section{display:block!important}body{background:#fff;color:#000}}
+</style></head><body>
+<h1>BMI Calculator</h1>
+<nav class="np" role="tablist" id="tabs"></nav>
+
+<section data-t="Calculator">
+<div class="card"><h2>Your details</h2>
+<div class="g">
+<label>Profile<select id="prof"></select></label>
+<label>Units<select id="u"><option value="m">Metric (cm, kg)</option><option value="i">Imperial (ft/in, lb)</option></select></label>
+<label class="me">Height (cm)<input id="cm" data-k="cm" type="number" inputmode="decimal"></label>
+<label class="im">Height (ft)<input id="ft" data-k="ft" type="number" inputmode="decimal"></label>
+<label class="im">Height (in)<input id="inn" data-k="inn" type="number" inputmode="decimal"></label>
+<label>Weight<input id="w" data-k="w" type="number" inputmode="decimal"></label>
+<label>Weight unit<select id="wu"><option>kg</option><option>lb</option><option>st</option></select></label>
+<label>Age<input id="age" data-k="age" type="number" inputmode="numeric"></label>
+<label>Sex<select id="sex" data-k="sex"><option value="m">Male</option><option value="f">Female</option></select></label>
+</div>
+<label style="margin-top:10px"><input type="checkbox" id="asian" style="width:auto"> Use Asian-population cutoffs (overweight from 23)</label>
+<button class="btn s np" id="reset">Reset inputs</button></div>
+<div class="card" aria-live="polite"><div id="err"></div><div id="res">
+<svg id="gauge" viewBox="0 0 200 115" role="img" aria-label="BMI gauge" style="width:100%;max-width:340px;display:block;margin:auto"></svg>
+<div id="big"></div><div id="cat"></div><p id="note" style="text-align:center;color:var(--mut)"></p>
+<div class="bar" id="scale"></div>
+<div class="np"><button class="btn" id="share">Share result</button><button class="btn s" id="print">Print report</button></div></div></div>
+<div class="card" id="an"><h2>Analysis</h2><div class="g" id="anG"></div></div>
+<div class="card"><h2>Tips for you</h2><ul id="tips"></ul></div>
+</section>
+
+<section data-t="Body">
+<div class="card"><h2>Measurements</h2><div class="g">
+<label>Waist (<span class="u1">cm</span>)<input id="waist" data-k="waist" type="number" inputmode="decimal"></label>
+<label>Hip (<span class="u1">cm</span>)<input id="hip" data-k="hip" type="number" inputmode="decimal"></label>
+<label>Activity<select id="act" data-k="act"><option value="0">Sedentary</option><option value="1">Light (1–3 days)</option><option value="2">Moderate (3–5 days)</option><option value="3">Very active (6–7 days)</option><option value="4">Athlete / physical job</option></select></label></div></div>
+<div class="card"><h2>Body metrics</h2><div class="g" id="bodyG"></div></div>
+<div class="card"><h2>Calories and macros</h2><div class="g" id="calG"></div></div>
+<div class="card"><h2>Ideal weight formulas</h2><div class="g" id="idG"></div></div>
+</section>
+
+<section data-t="Goals">
+<div class="card"><h2>Goal</h2><div class="g">
+<label>Goal weight<input id="goal" data-k="goal" type="number" inputmode="decimal"></label>
+<label>Weekly rate<select id="rate" data-k="rate"><option value="0.25">0.25 kg / week</option><option value="0.5">0.5 kg / week</option><option value="0.75">0.75 kg / week</option><option value="1">1 kg / week</option></select></label></div>
+<button class="btn s" id="setStart">Set current weight as start</button>
+<div class="pg" style="margin:12px 0 6px"><div id="pgb"></div></div><div id="pgt"></div><div class="g" id="goalG" style="margin-top:10px"></div></div>
+<div class="card"><h2>What-if</h2><label>Try a weight: <b id="wiW"></b><input id="wi" type="range" min="30" max="200" step="0.5"></label><div id="wiR" style="font-weight:700;margin-top:6px"></div></div>
+</section>
+
+<section data-t="Track">
+<div class="card"><h2 id="eh">Save an entry</h2><div class="g">
+<label>Date<input id="ed" type="date"></label><label>Note<input id="en" maxlength="80" placeholder="Optional"></label></div>
+<button class="btn" id="saveE">Save entry</button><button class="btn s" id="cancelE" hidden>Cancel edit</button></div>
+<div class="card"><h2>Trend</h2><label>Show<select id="cm2"><option value="b">BMI</option><option value="k">Weight</option></select></label>
+<svg id="chart" viewBox="0 0 300 140" role="img" aria-label="Trend chart" style="width:100%"></svg><div class="g" id="stG"></div></div>
+<div class="card" style="overflow-x:auto"><h2>History</h2><table><thead><tr><th>Date</th><th>Weight</th><th>BMI</th><th>Note</th><th class="np"></th></tr></thead><tbody id="hist"></tbody></table><div id="empty" style="color:var(--mut)">No entries yet. Save your first one above.</div></div>
+<div class="card np"><h2>Data</h2>
+<button class="btn s" id="xcsv">Export CSV</button><button class="btn s" id="xjson">Export JSON</button><button class="btn s" id="rest">Restore from box</button>
+<textarea id="box" rows="4" placeholder="Exports appear here. Paste a JSON backup and tap Restore."></textarea>
+<button class="btn s" id="copyBox">Copy box</button><button class="btn s" id="clr">Clear all data</button></div>
+</section>
+
+<section data-t="Learn">
+<div class="card"><h2>BMI categories</h2><table id="ref"></table></div>
+<div class="card"><h2>How BMI works</h2><p>BMI is weight in kilograms divided by height in metres squared. It screens for weight categories but doesn’t measure body fat, muscle, or where fat is stored.</p></div>
+<div class="card"><h2>FAQ</h2>
+<details><summary>Is BMI accurate for athletes?</summary><p>Not always. Muscle weighs more than fat, so muscular people can score as overweight.</p></details>
+<details><summary>Why are Asian cutoffs different?</summary><p>At the same BMI, many Asian populations carry more body fat and higher health risk, so lower cutoffs are suggested.</p></details>
+<details><summary>How are children measured?</summary><p>For ages 2–19, BMI is compared with age-based percentiles. This app shows a simplified estimate only.</p></details>
+<details><summary>Where is my data stored?</summary><p>Only in this browser. Nothing is uploaded. Use the backup tools on the Track tab to move it.</p></details></div>
+<div class="card"><p><b>Medical disclaimer:</b> This tool is for information only and is not medical advice. Talk to a healthcare professional about your health and weight.</p></div>
+</section>
+
+<section data-t="Settings">
+<div class="card"><h2>Appearance</h2><div class="g">
+<label>Theme<select id="theme"><option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+<label>Accent color<input id="ac" type="color" style="height:42px;padding:2px"></label></div></div>
+<div class="card"><h2>Profiles</h2><div class="g"><label>New profile name<input id="pname" maxlength="20"></label></div>
+<button class="btn" id="addP">Add profile</button><button class="btn s" id="delP">Delete this profile</button></div>
+</section>
+<div id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id),K='bmiapp1',f=(n,d=1)=>isFinite(n)?(+n).toFixed(d):'–';
+let DB;try{DB=JSON.parse(localStorage.getItem(K))}catch(e){}
+DB=DB||{cur:'Me',p:{},set:{theme:'auto',ac:'#0f766e',asian:false}};
+const def=()=>({i:{u:'m',cm:170,ft:5,inn:7,w:70,wu:'kg',age:30,sex:'m',act:1,waist:'',hip:'',goal:65,rate:0.5},e:[],start:null});
+if(!DB.p[DB.cur])DB.p[DB.cur]=def();
+const P=()=>DB.p[DB.cur],I=()=>P().i,save=()=>{try{localStorage.setItem(K,JSON.stringify(DB))}catch(e){}};
+let editId=null,clrArm=false,tt;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2200)}
+const WF={kg:1,lb:2.20462,st:1/6.35029};
+const toKg=v=>v/WF[I().wu],fromKg=k=>k*WF[I().wu],wf=k=>f(fromKg(k))+' '+I().wu;
+const getCm=()=>I().u=='m'?+I().cm:I().ft*30.48+I().inn*2.54;
+const NAMES=['Severe thinness','Moderate thinness','Mild thinness','Normal weight','Overweight','Obese class I','Obese class II','Obese class III'];
+const COL=['#7c3aed','#6366f1','#3b82f6','#16a34a','#eab308','#f97316','#ef4444','#b91c1c'];
+const lim=()=>DB.set.asian?[16,17,18.5,23,27.5,32.5,37.5]:[16,17,18.5,25,30,35,40];
+const ci=b=>{const L=lim();let i=0;while(i<7&&b>=L[i])i++;return i};
+const TIPS=[['Add nutrient-dense foods and protein at each meal.','Strength training helps build healthy weight.','Consider a check-up to rule out underlying causes.'],
+['Keep up regular activity: about 150 minutes a week.','Eat plenty of vegetables, fruit, and whole grains.','Sleep 7–9 hours and drink enough water.'],
+['Aim for small, steady changes, such as a daily walk.','Cut back on sugary drinks and ultra-processed snacks.','Track waist size as well as weight.'],
+['Talk with a doctor about a safe plan for you.','Start with low-impact activity such as walking or swimming.','Focus on habits first, not quick fixes.']];
+const g=(v,l)=>`<div class="m"><b>${v}</b><span>${l}</span></div>`;
+const erf=x=>{const s=Math.sign(x);x=Math.abs(x);const t=1/(1+.3275911*x);return s*(1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*Math.exp(-x*x))};
+function pct(b,a,s){const T=[[2,16.4],[4,15.6],[6,15.3],[8,15.8],[10,16.8],[12,18],[14,19.4],[16,20.5],[18,21.5],[19,22]];let m=T[9][1];for(let j=0;j<9;j++)if(a>=T[j][0]&&a<=T[j+1][0]){m=T[j][1]+(T[j+1][1]-T[j][1])*(a-T[j][0])/(T[j+1][0]-T[j][0])}
+if(s=='f')m*=1.01;return 50*(1+erf(Math.log(b/m)/.13/Math.SQRT2))}
+
+// tabs
+const secs=[...document.querySelectorAll('section')];
+secs.forEach((s,n)=>{const b=document.createElement('button');b.textContent=s.dataset.t;b.setAttribute('role','tab');b.onclick=()=>show(n);$('tabs').append(b)});
+function show(n){secs.forEach((s,k)=>s.classList.toggle('on',k==n));[...$('tabs').children].forEach((b,k)=>b.setAttribute('aria-selected',k==n));try{sessionStorage.setItem('t',n)}catch(e){}}
+// gauge
+function pt(b,r){const t=(Math.min(40,Math.max(10,b))-10)/30;return[100-r*Math.cos(Math.PI*t),100-r*Math.sin(Math.PI*t)].map(v=>v.toFixed(1)).join(' ')}
+function drawGauge(){const L=[10,...lim(),40];let h='';for(let i=0;i<8;i++)h+=`<path d="M${pt(L[i],80)} A80 80 0 0 1 ${pt(L[i+1],80)}" fill="none" stroke="${COL[i]}" stroke-width="14"/>`;
+h+=`<g class="needle" id="nd"><line x1="100" y1="100" x2="100" y2="32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></g><circle cx="100" cy="100" r="6" fill="currentColor"/>`;$('gauge').innerHTML=h;
+$('scale').innerHTML=L.slice(0,8).map((v,i)=>`<i style="flex:${L[i+1]-v};background:${COL[i]}"></i>`).join('');
+$('ref').innerHTML='<tr><th>Category</th><th>BMI</th></tr>'+NAMES.map((n,i)=>`<tr><td style="color:${COL[i]}">&#9632; ${n}</td><td>${i?L[i]:'below'} ${i==7?'and above':i?'– '+L[i+1]:L[1]}</td></tr>`.replace('below '+L[1]+' ','below ').replace(/(\d)– (\d)/,'$1 – $2')).join('')}
+
+function calc(){const i=I(),kg=toKg(+i.w),cm=getCm(),m=cm/100;if(!(kg>=2&&kg<=500&&cm>=50&&cm<=272&&i.age>=2&&i.age<=120))return null;return{kg,cm,m,b:kg/m/m}}
+function render(){
+const i=I(),d=document.body;d.dataset.u=i.u;document.querySelectorAll('.u1').forEach(e=>e.textContent=i.u=='m'?'cm':'in');
+const c=calc(),sec=$('res');$('err').textContent=c?'':'Enter a height between 50–272 cm, a weight of 2–500 kg, and an age of 2–120.';sec.hidden=!c;
+$('an').hidden=!c;if(!c){renderTrack();return}
+const{kg,cm,m,b}=c,ix=ci(b),child=i.age<20,M=i.sex=='m';
+$('big').textContent=f(b);$('cat').textContent=NAMES[ix];$('cat').style.color=COL[ix];
+$('nd').style.transform=`rotate(${(Math.min(40,Math.max(10,b))-10)/30*180-90}deg)`;
+let note=DB.set.asian?'Asian-population cutoffs applied. ':'';if(child){const p=pct(b,i.age,i.sex);note+=`Estimated percentile for age ${i.age}: ${f(p,0)} (${p<5?'underweight':p<85?'healthy':p<95?'overweight':'obese'}). Simplified estimate, not official CDC data.`}else if(i.age>=65)note+='For adults 65+, a slightly higher BMI (about 25–27) can be healthy.';$('note').textContent=note;
+const hi=(DB.set.asian?23:25)*m*m,lo=18.5*m*m,diff=kg<lo?`Gain ${wf(lo-kg)}`:kg>hi?`Lose ${wf(kg-hi)}`:'In range';
+const inch=cm/2.54-60,H=Math.max(inch,0),bf=1.2*b+.23*i.age-10.8*(M?1:0)-5.4;
+$('anG').innerHTML=g(`${wf(lo)} – ${wf(hi)}`,'Healthy weight range')+g(diff,'To reach healthy range')+g(f(b/(DB.set.asian?23:25),2),'BMI Prime')+g(f(kg/m**3),'Ponderal Index')+g(f(1.3*kg/m**2.5),'New BMI (Trefethen)')+(child?g(f(pct(b,i.age,i.sex),0)+'th','Child percentile (est.)'):'')+g(f(bf)+'%','Body fat (Deurenberg est.)');
+$('tips').innerHTML=TIPS[ix<3?0:ix==3?1:ix==4?2:3].map(t=>`<li>${t}</li>`).join('');
+// body
+const wst=+i.waist,hp=+i.hip,hcm=cm,ur=i.u=='m'?1:2.54,lbm=kg*(1-Math.max(bf,0)/100);
+const bmr=10*kg+6.25*cm-5*i.age+(M?5:-161),hb=M?88.362+13.397*kg+4.799*cm-5.677*i.age:447.593+9.247*kg+3.098*cm-4.33*i.age,tdee=bmr*[1.2,1.375,1.55,1.725,1.9][i.act];
+$('bodyG').innerHTML=g(f(bmr,0)+' kcal','BMR (Mifflin-St Jeor)')+g(f(hb,0)+' kcal','BMR (Harris-Benedict)')+g(f(tdee,0)+' kcal','TDEE (daily burn)')+g(wf(lbm),'Lean body mass (est.)')+g(f(Math.sqrt(cm*kg/3600),2)+' m²','Body surface area')+g(f(kg*.033,1)+' L','Water per day')+(wst&&hp?g(f(wst/hp,2),'Waist-to-hip ratio'):'')+(wst?g(f(wst*ur/cm,2),'Waist-to-height ratio'):'');
+const rk=+i.rate*1100,gk=toKg(+i.goal),tg=gk<kg?tdee-rk:gk>kg?tdee+rk:tdee,mac=k=>`P ${f(k*.3/4,0)}g · C ${f(k*.4/4,0)}g · F ${f(k*.3/9,0)}g`;
+$('calG').innerHTML=g(f(tdee-500,0),'Lose (−500)')+g(f(tdee,0),'Maintain')+g(f(tdee+300,0),'Gain (+300)')+g(f(tg,0),'For your goal & rate')+g(mac(tg),'Macros at goal calories (30/40/30)');
+const I2=(a,b2,c2)=>f(a+c2*H*(b2||1),1);const dv=[['Devine',M?50+2.3*H:45.5+2.3*H],['Robinson',M?52+1.9*H:49+1.7*H],['Miller',M?56.2+1.41*H:53.1+1.36*H],['Hamwi',M?48+2.7*H:45.4+2.27*H]];
+$('idG').innerHTML=dv.map(x=>g(wf(x[1]),x[0])).join('');
+// goals
+const wks=Math.abs(kg-gk)/i.rate,st=P().start||(P().e[0]?P().e[0].kg:kg),pg=st==gk?100:Math.min(100,Math.max(0,(st-kg)/(st-gk)*100)),dt=new Date(Date.now()+wks*6048e5);
+$('pgb').style.width=pg+'%';$('pgt').textContent=`${f(pg,0)}% of the way from ${wf(st)} to ${wf(gk)}`;
+$('goalG').innerHTML=g(Math.abs(kg-gk)<.05?'Reached':wf(Math.abs(kg-gk)),gk<kg?'To lose':'To gain')+g(f(wks,0)+' weeks','Time at this rate')+g(Math.abs(kg-gk)<.05?'–':dt.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),'Projected date')+g(f(gk/m/m),'BMI at goal');
+const wi=$('wi');wiUpd();renderTrack()}
+function wiUpd(){const c=calc();if(!c)return;const k=+$('wi').value,b=k/c.m/c.m,x=ci(b);$('wiW').textContent=wf(k);$('wiR').textContent=`BMI ${f(b)} · ${NAMES[x]}`;$('wiR').style.color=COL[x]}
+function renderTrack(){const e=P().e.slice().sort((a,b)=>a.d<b.d?-1:1),h=$('hist');$('empty').hidden=e.length>0;
+h.innerHTML=e.slice().reverse().map(x=>`<tr><td>${x.d}</td><td>${wf(x.kg)}</td><td>${f(x.bmi)}</td><td>${esc(x.n)}</td><td class="np"><button class="btn s" data-ed="${x.id}">Edit</button><button class="btn s" data-del="${x.id}">Delete</button></td></tr>`).join('');
+if(e.length){const bs=e.map(x=>x.bmi),ks=e.map(x=>x.kg);$('stG').innerHTML=g(f(Math.min(...bs)),'Lowest BMI')+g(f(Math.max(...bs)),'Highest BMI')+g(f(bs.reduce((a,b)=>a+b)/bs.length),'Average BMI')+g((ks[ks.length-1]>=ks[0]?'+':'−')+wf(Math.abs(ks[ks.length-1]-ks[0])),'Total change')}else $('stG').innerHTML='';
+const v=$('cm2').value=='b'?e.map(x=>x.bmi):e.map(x=>fromKg(x.kg));let s='';
+if(v.length){const mn=Math.min(...v),mx=Math.max(...v),r=mx-mn||1,X=n=>v.length>1?20+n*260/(v.length-1):150,Y=y=>120-(y-mn)/r*100;
+s=`<polyline fill="none" stroke="var(--ac)" stroke-width="2" points="${v.map((y,n)=>X(n)+','+Y(y)).join(' ')}"/>`+v.map((y,n)=>`<circle cx="${X(n)}" cy="${Y(y)}" r="3" fill="var(--ac)"/>`).join('')+`<text x="2" y="24" font-size="9" fill="currentColor">${f(mx)}</text><text x="2" y="124" font-size="9" fill="currentColor">${f(mn)}</text>`}
+else s='<text x="150" y="70" text-anchor="middle" font-size="11" fill="currentColor">Save 1+ entries to see a chart</text>';$('chart').innerHTML=s}
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function syncInputs(){const i=I();document.querySelectorAll('[data-k]').forEach(el=>el.value=i[el.dataset.k]);$('u').value=i.u;$('wu').value=i.wu;$('wi').value=Math.round(toKg(+i.w)*2)/2||70;
+$('theme').value=DB.set.theme;$('ac').value=DB.set.ac;$('asian').checked=DB.set.asian;$('prof').innerHTML=Object.keys(DB.p).map(n=>`<option>${esc(n)}</option>`).join('');$('prof').value=DB.cur}
+function applyTheme(){const r=document.documentElement;DB.set.theme=='auto'?r.removeAttribute('data-theme'):r.dataset.theme=DB.set.theme;r.style.setProperty('--ac',DB.set.ac)}
+document.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',()=>{const v=el.value;I()[el.dataset.k]=v!==''&&!isNaN(v)?+v:v;if(el.id=='w')$('wi').value=Math.round(toKg(+v)*2)/2;save();render()}));
+$('u').onchange=e=>{const i=I(),to=e.target.value;if(to==i.u)return;if(to=='i'){const t=i.cm/2.54;i.ft=Math.floor(t/12);i.inn=+f(t%12);['waist','hip'].forEach(k=>i[k]=i[k]?+f(i[k]/2.54):'')}else{i.cm=+f(i.ft*30.48+i.inn*2.54);['waist','hip'].forEach(k=>i[k]=i[k]?+f(i[k]*2.54):'')}
+const nw=to=='i'?'lb':'kg';if(nw!=i.wu){const k=toKg(i.w),gk=toKg(i.goal);i.wu=nw;i.w=+f(fromKg(k));i.goal=+f(fromKg(gk))}i.u=to;save();syncInputs();render()};
+$('wu').onchange=e=>{const i=I(),k=toKg(i.w),gk=toKg(i.goal);i.wu=e.target.value;i.w=+f(fromKg(k),2);i.goal=+f(fromKg(gk),2);save();syncInputs();render()};
+$('asian').onchange=e=>{DB.set.asian=e.target.checked;save();drawGauge();render()};
+$('theme').onchange=e=>{DB.set.theme=e.target.value;save();applyTheme()};$('ac').oninput=e=>{DB.set.ac=e.target.value;save();applyTheme()};
+$('wi').oninput=wiUpd;$('cm2').onchange=renderTrack;
+$('prof').onchange=e=>{DB.cur=e.target.value;save();syncInputs();render()};
+$('addP').onclick=()=>{const n=$('pname').value.trim();if(!n||DB.p[n])return toast(n?'That profile already exists':'Enter a name');DB.p[n]=def();DB.cur=n;$('pname').value='';save();syncInputs();render();toast('Profile added')};
+$('delP').onclick=()=>{if(Object.keys(DB.p).length<2)return toast('Keep at least one profile');delete DB.p[DB.cur];DB.cur=Object.keys(DB.p)[0];save();syncInputs();render();toast('Profile deleted')};
+$('reset').onclick=()=>{P().i=def().i;save();syncInputs();render();toast('Inputs reset')};
+$('setStart').onclick=()=>{const c=calc();if(!c)return;P().start=c.kg;save();render();toast('Start weight set')};
+$('saveE').onclick=()=>{const c=calc();if(!c)return toast('Fix your inputs first');const d=$('ed').value;if(!d)return toast('Pick a date');const o={id:editId||Date.now(),d,kg:c.kg,bmi:c.b,n:$('en').value};
+if(editId){P().e=P().e.map(x=>x.id==editId?o:x)}else P().e.push(o);toast(editId?'Entry updated':'Entry saved');endEdit();save();render()};
+function endEdit(){editId=null;$('eh').textContent='Save an entry';$('cancelE').hidden=true;$('en').value='';$('ed').value=new Date().toISOString().slice(0,10)}
+$('cancelE').onclick=endEdit;
+$('hist').onclick=e=>{const b=e.target,id=+(b.dataset.ed||b.dataset.del);if(!id)return;const x=P().e.find(y=>y.id==id);
+if(b.dataset.del){P().e=P().e.filter(y=>y.id!=id);save();render();toast('Entry deleted')}else{editId=id;$('ed').value=x.d;$('en').value=x.n;I().w=+f(fromKg(x.kg),2);$('eh').textContent='Edit entry';$('cancelE').hidden=false;save();syncInputs();render();show(3)}};
+function dl(name,txt,type){$('box').value=txt;try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click()}catch(e){}toast('Exported. Copy it from the box if no download starts')}
+$('xcsv').onclick=()=>dl('bmi.csv','Date,Weight(kg),BMI,Note\n'+P().e.map(x=>[x.d,f(x.kg,2),f(x.bmi,2),'"'+String(x.n||'').replace(/"/g,'""')+'"'].join(',')).join('\n'),'text/csv');
+$('xjson').onclick=()=>dl('bmi-backup.json',JSON.stringify(DB,null,1),'application/json');
+$('rest').onclick=()=>{try{const o=JSON.parse($('box').value);if(!o.p||!o.cur||!o.p[o.cur])throw 0;DB=o;save();applyTheme();syncInputs();render();toast('Backup restored')}catch(e){toast('That isn’t a valid backup')}};
+async function copy(t){try{await navigator.clipboard.writeText(t);return 1}catch(e){const b=$('box');b.value=t;b.select();try{return document.execCommand('copy')}catch(x){return 0}}}
+$('copyBox').onclick=async()=>toast(await copy($('box').value)?'Copied':'Select the text and copy manually');
+$('clr').onclick=()=>{if(!clrArm){clrArm=true;$('clr').textContent='Tap again to delete everything';setTimeout(()=>{clrArm=false;$('clr').textContent='Clear all data'},4000);return}
+try{localStorage.removeItem(K)}catch(e){}DB={cur:'Me',p:{Me:def()},set:DB.set};save();clrArm=false;$('clr').textContent='Clear all data';syncInputs();render();toast('All data cleared')};
+$('print').onclick=()=>window.print();
+$('share').onclick=async()=>{const c=calc();if(!c)return;const t=`My BMI is ${f(c.b)} (${NAMES[ci(c.b)]}) at ${wf(c.kg)}, ${f(c.cm,0)} cm.`;try{if(navigator.share){await navigator.share({text:t});return}}catch(e){}toast(await copy(t)?'Summary copied':'Copy failed')};
+
+drawGauge();syncInputs();applyTheme();endEdit();render();let t0=0;try{t0=+sessionStorage.getItem('t')||0}catch(e){}show(t0);
+</script></body></html>

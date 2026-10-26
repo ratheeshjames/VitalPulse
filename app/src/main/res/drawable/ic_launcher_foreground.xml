@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer biometric gauge ring -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M54,24 C37.43,24 24,37.43 24,54 C24,62.28 27.36,69.78 32.79,75.21 L38.45,69.55 C34.47,65.57 32,60.07 32,54 C32,41.85 41.85,32 54,32 C66.15,32 76,41.85 76,54 C76,60.07 73.53,65.57 69.55,69.55 L75.21,75.21 C80.64,69.78 84,62.28 84,54 C84,37.43 70.57,24 54,24 Z" />
+    <!-- Central vital pulse wave & heart core -->
+    <path
+        android:fillColor="#F43F5E"
+        android:pathData="M34,56 L43,56 L48,43 L54,67 L60,50 L64,56 L74,56 L74,62 L61,62 L59,58 L54,75 L47,51 L45,62 L34,62 Z" />
+    <!-- Gauge needle accent dot -->
+    <path
+        android:fillColor="#A7F3D0"
+        android:pathData="M54,36 A5,5 0 1,1 54,46 A5,5 0 1,1 54,36 Z" />
+</vector>

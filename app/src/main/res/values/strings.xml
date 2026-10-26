@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">VitalPulse</string>
+    <string name="nav_pulse">Pulse</string>
+    <string name="nav_metabolism">Metabolism</string>
+    <string name="nav_trajectory">Trajectory</string>
+    <string name="nav_journal">Journal</string>
+    <string name="cd_profile_switcher">Switch or manage user profiles</string>
+    <string name="cd_reference_guide">Open BMI reference guide and FAQ</string>
+    <string name="cd_theme_settings">Open appearance and theme settings</string>
+    <string name="cd_share_report">Share biometric summary</string>
+    <string name="cd_print_report">Print biometric report</string>
+    <string name="cd_reset_inputs">Reset profile measurements to defaults</string>
+    <string name="cd_log_weight">Log new weight and BMI entry</string>
+    <string name="cd_bmi_gauge">Radial BMI classification arc gauge</string>
+    <string name="cd_trend_chart">Historical BMI and weight trend chart</string>
+    <string name="validation_error_bounds">Enter height 50–272 cm, weight 2–500 kg, and age 2–120 years.</string>
+    <string name="medical_disclaimer">For informational wellness tracking only and not a substitute for professional medical diagnosis or advice.</string>
+</resources>
